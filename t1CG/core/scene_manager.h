@@ -13,6 +13,7 @@
 #include <GL/glu.h>
 #include "object_3d.h"
 #include "shader_utils.h"
+#include "polygon_fill_algorithm.h"
 
 enum class LightingModel {
     FLAT,
@@ -94,61 +95,73 @@ public:
         objects.clear();
     }
 
+
+
     void createExtrudedObject(const std::vector<Point2D>& vertices2D, float depth) {
         if (vertices2D.size() < 3) return;
 
         Object3D* obj = new Object3D();
         
-        // Calcula o centroide para centralizar o objeto
-        float minX = (float)vertices2D[0].coordinateX, maxX = (float)vertices2D[0].coordinateX;
-        float minY = (float)vertices2D[0].coordinateY, maxY = (float)vertices2D[0].coordinateY;
-        
-        for (const auto& p : vertices2D) {
-            if (p.coordinateX < minX) minX = (float)p.coordinateX;
-            if (p.coordinateX > maxX) maxX = (float)p.coordinateX;
-            if (p.coordinateY < minY) minY = (float)p.coordinateY;
-            if (p.coordinateY > maxY) maxY = (float)p.coordinateY;
-        }
-        
-        float centerX = (minX + maxX) / 2.0f;
-        float centerY = (minY + maxY) / 2.0f;
-        
         // Fator de escala para caber na visualizacao (coords tela 0-800 -> coords 3D aprox -4 a 4)
         float scale = 0.01f; 
         
+        // --- 1. Gerar Paredes Laterais (Side Walls) ---
+        // Usamos os vértices originais para garantir o contorno correto
         int n = vertices2D.size();
+        int baseIndex = 0;
         
-        // Vertices da face frontal (z = +depth/2)
+        // Adicionar vértices para as paredes (frente e trás)
         for (const auto& p : vertices2D) {
-            // Inverte Y porque Y da tela e para baixo, Y 3D e para cima
-            obj->addVertex((p.coordinateX - centerX) * scale, -(p.coordinateY - centerY) * scale, (depth * scale) / 2.0f);
+            // Frente (Z = +depth/2)
+            obj->addVertex(p.coordinateX * scale, -p.coordinateY * scale, (depth * scale) / 2.0f);
+        }
+        for (const auto& p : vertices2D) {
+            // Trás (Z = -depth/2)
+            obj->addVertex(p.coordinateX * scale, -p.coordinateY * scale, -(depth * scale) / 2.0f);
         }
         
-        // Vertices da face traseira (z = -depth/2)
-        for (const auto& p : vertices2D) {
-            obj->addVertex((p.coordinateX - centerX) * scale, -(p.coordinateY - centerY) * scale, -(depth * scale) / 2.0f);
-        }
-        
-        // Front face
-        std::vector<int> frontFaceIndices;
-        for (int i = 0; i < n; i++) frontFaceIndices.push_back(i);
-        obj->addFace(frontFaceIndices);
-        
-        // Face traseira (ordem reversa para apontar para fora)
-        std::vector<int> backFaceIndices;
-        for (int i = 0; i < n; i++) backFaceIndices.push_back(n + (n - 1 - i));
-        obj->addFace(backFaceIndices);
-        
-        // Side faces
+        // Criar faces laterais
         for (int i = 0; i < n; i++) {
             int next = (i + 1) % n;
-            // Quad: i, next, next+n, i+n
+            // Quad: i (frente), next (frente), next+n (trás), i+n (trás)
+            // Ordem para normal apontar para fora
             std::vector<int> sideFace;
             sideFace.push_back(i);
             sideFace.push_back(next);
             sideFace.push_back(next + n);
             sideFace.push_back(i + n);
             obj->addFace(sideFace);
+        }
+        
+        // --- 2. Gerar Tampas (Caps) usando Triangulação (Scanline) ---
+        // Isso resolve problemas de polígonos côncavos e auto-interseção
+        PolygonFillAlgorithm algo;
+        // Usamos uma altura suficiente para cobrir a tela
+        std::vector<std::vector<Point2D>> triangles = algo.generateTriangulation(vertices2D, 2000); 
+        
+        // Tampa Frontal
+        for (const auto& tri : triangles) {
+            std::vector<int> faceIndices;
+            for (const auto& p : tri) {
+                obj->addVertex(p.coordinateX * scale, -p.coordinateY * scale, (depth * scale) / 2.0f);
+                faceIndices.push_back(obj->vertices.size() - 1);
+            }
+            // A ordem da triangulação do scanline é geralmente consistente, mas precisamos verificar o winding.
+            // Scanline varre Y, depois X. 
+            // Vamos assumir CCW. Se ficar invertido, trocamos.
+            obj->addFace(faceIndices);
+        }
+        
+        // Tampa Traseira
+        for (const auto& tri : triangles) {
+            std::vector<int> faceIndices;
+            // Para a tampa traseira, precisamos inverter a ordem dos vértices para a normal apontar para trás
+            for (int i = 2; i >= 0; i--) {
+                const auto& p = tri[i];
+                obj->addVertex(p.coordinateX * scale, -p.coordinateY * scale, -(depth * scale) / 2.0f);
+                faceIndices.push_back(obj->vertices.size() - 1);
+            }
+            obj->addFace(faceIndices);
         }
         
         obj->calculateNormals();
