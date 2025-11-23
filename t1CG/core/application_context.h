@@ -78,9 +78,10 @@ public:
                         break;
                 }
             },
-            // Object type callback (placeholder - pode adicionar lógica depois)
+            // Object type callback
             [this](ObjectType type) {
-                // TODO: Implementar criação de diferentes objetos
+                sceneManager.clearObjects(); // Remove objetos extrudados/anteriores
+                sceneManager.setObjectType(type);
             },
             // Object color callback
             [this](float r, float g, float b) {

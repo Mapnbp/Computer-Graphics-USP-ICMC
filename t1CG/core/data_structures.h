@@ -87,6 +87,17 @@ enum class ColorTarget {
 };
 
 /**
+ * @enum ObjectType
+ * @brief Tipos de objetos 3D disponíveis
+ */
+enum class ObjectType {
+    CUBE = 0,
+    SPHERE = 1,
+    CYLINDER = 2,
+    PYRAMID = 3
+};
+
+/**
  * @struct Point2D
  * @brief Representa um ponto 2D com coordenadas inteiras
  */

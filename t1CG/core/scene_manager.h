@@ -30,6 +30,7 @@ private:
     std::vector<Object3D*> objects;
     LightingModel currentLightingModel;
     ProjectionType currentProjection;
+    ObjectType currentObjectType;
     
     // Câmera
     Vector3D cameraPosition;
@@ -51,6 +52,7 @@ public:
     SceneManager() 
         : currentLightingModel(LightingModel::FLAT),
           currentProjection(ProjectionType::PERSPECTIVE),
+          currentObjectType(ObjectType::CUBE),
           cameraPosition(0, 0, 5),
           cameraTarget(0, 0, 0),
           cameraUp(0, 1, 0),
@@ -168,6 +170,10 @@ public:
         // updateProjectionMatrix will be called in render loop with correct dimensions
     }
 
+    void setObjectType(ObjectType type) {
+        currentObjectType = type;
+    }
+
     void updateProjectionMatrix(int w, int h) {
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
@@ -229,11 +235,95 @@ public:
 
         // Desenhar Objetos
         bool useFlat = (currentLightingModel == LightingModel::FLAT);
-        for (auto obj : objects) {
-            obj->draw(useFlat);
+        
+        // Se tiver objetos na lista (do extrusor 2D), desenha eles
+        // Caso contrário, desenha a primitiva selecionada
+        if (!objects.empty()) {
+             for (auto obj : objects) {
+                obj->draw(useFlat);
+            }
+        } else {
+            // Desenha primitiva baseada no tipo selecionado
+            switch (currentObjectType) {
+                case ObjectType::CUBE:
+                    glutSolidCube(1.5f);
+                    break;
+                case ObjectType::SPHERE:
+                    drawSphere(1.0f, 20, 20);
+                    break;
+                case ObjectType::CYLINDER:
+                    drawCylinder(0.8f, 0.8f, 2.0f, 20, 5);
+                    break;
+                case ObjectType::PYRAMID:
+                    drawPyramid(1.5f);
+                    break;
+            }
         }
         
         glUseProgram(0);
+    }
+
+    // Funções de desenho de primitivas
+    void drawSphere(float radius, int slices, int stacks) {
+        glutSolidSphere(radius, slices, stacks);
+    }
+
+    void drawCylinder(float baseRadius, float topRadius, float height, int slices, int stacks) {
+        GLUquadric* quad = gluNewQuadric();
+        gluQuadricDrawStyle(quad, GLU_FILL);
+        gluQuadricNormals(quad, GLU_SMOOTH);
+        
+        glPushMatrix();
+        glTranslatef(0.0f, -height/2.0f, 0.0f); // Centraliza
+        glRotatef(-90.0f, 1.0f, 0.0f, 0.0f); // Rotaciona para ficar em pé
+        gluCylinder(quad, baseRadius, topRadius, height, slices, stacks);
+        
+        // Tampas do cilindro
+        gluDisk(quad, 0.0f, baseRadius, slices, 1);
+        glTranslatef(0.0f, 0.0f, height);
+        gluDisk(quad, 0.0f, topRadius, slices, 1);
+        
+        glPopMatrix();
+        gluDeleteQuadric(quad);
+    }
+
+    void drawPyramid(float size) {
+        float halfSize = size / 2.0f;
+        
+        glBegin(GL_TRIANGLES);
+            // Frente
+            glNormal3f(0.0f, 0.5f, 1.0f);
+            glVertex3f(0.0f, halfSize, 0.0f);
+            glVertex3f(-halfSize, -halfSize, halfSize);
+            glVertex3f(halfSize, -halfSize, halfSize);
+            
+            // Direita
+            glNormal3f(1.0f, 0.5f, 0.0f);
+            glVertex3f(0.0f, halfSize, 0.0f);
+            glVertex3f(halfSize, -halfSize, halfSize);
+            glVertex3f(halfSize, -halfSize, -halfSize);
+            
+            // Trás
+            glNormal3f(0.0f, 0.5f, -1.0f);
+            glVertex3f(0.0f, halfSize, 0.0f);
+            glVertex3f(halfSize, -halfSize, -halfSize);
+            glVertex3f(-halfSize, -halfSize, -halfSize);
+            
+            // Esquerda
+            glNormal3f(-1.0f, 0.5f, 0.0f);
+            glVertex3f(0.0f, halfSize, 0.0f);
+            glVertex3f(-halfSize, -halfSize, -halfSize);
+            glVertex3f(-halfSize, -halfSize, halfSize);
+        glEnd();
+        
+        glBegin(GL_QUADS);
+            // Base
+            glNormal3f(0.0f, -1.0f, 0.0f);
+            glVertex3f(-halfSize, -halfSize, halfSize);
+            glVertex3f(halfSize, -halfSize, halfSize);
+            glVertex3f(halfSize, -halfSize, -halfSize);
+            glVertex3f(-halfSize, -halfSize, -halfSize);
+        glEnd();
     }
 
     // Getters e Setters para Câmera e Luz...

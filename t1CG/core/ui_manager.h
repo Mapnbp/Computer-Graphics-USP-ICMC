@@ -33,12 +33,7 @@ enum class ProjectionMode {
     ORTHOGRAPHIC = 1
 };
 
-enum class ObjectType {
-    CUBE = 0,
-    SPHERE = 1,
-    CYLINDER = 2,
-    PYRAMID = 3
-};
+
 
 // ColorTarget já está definido em data_structures.h
 // Usar os mesmos valores: OBJECT e LIGHT
