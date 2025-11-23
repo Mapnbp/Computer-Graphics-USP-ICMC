@@ -81,11 +81,11 @@ public:
             // Object type callback (placeholder - pode adicionar lógica depois)
             [this](ObjectType type) {
                 // TODO: Implementar criação de diferentes objetos
-                std::cout << "Objeto selecionado: " << (int)type << std::endl;
             },
             // Object color callback
             [this](float r, float g, float b) {
                 sceneManager.setObjectColor(r, g, b);
+                polygonManager.setFillColor(r, g, b);
             },
             // Light color callback
             [this](float r, float g, float b) {
@@ -100,26 +100,22 @@ public:
                 if (polygonManager.getVertexCount() >= 3) {
                     polygonManager.closePolygon();
                     applicationState = ApplicationState::POLYGON_READY;
-                    std::cout << "Polígono fechado" << std::endl;
                 }
             },
             // Fill polygon (P)
             [this]() {
                 if (polygonManager.canBeFilled()) {
                     applicationState = ApplicationState::POLYGON_FILLED;
-                    std::cout << "Polígono marcado para preenchimento" << std::endl;
                 }
             },
             // Clear polygon (C)
             [this]() {
                 polygonManager.clearPolygon();
                 applicationState = ApplicationState::DRAWING_POLYGON;
-                std::cout << "Polígono limpo" << std::endl;
             },
             // Toggle vertices (V)
             [this]() {
                 polygonManager.toggleVertexVisibility();
-                std::cout << "Vértices " << (polygonManager.getVisualConfiguration().showVertices ? "mostrados" : "ocultos") << std::endl;
             },
             // Save polygon (S)
             [this]() {
@@ -128,9 +124,7 @@ public:
                     polygonManager.saveCurrentPolygon(isFilled);
                     polygonManager.clearPolygon();
                     applicationState = ApplicationState::DRAWING_POLYGON;
-                    std::cout << "Polígono salvo!" << std::endl;
                 } else {
-                    std::cout << "Polígono deve estar fechado para ser salvo!" << std::endl;
                 }
             }
         );
@@ -163,7 +157,6 @@ public:
             square.push_back(Point2D(450, 350));
             square.push_back(Point2D(350, 350));
             sceneManager.createExtrudedObject(square, 100.0f);
-            std::cout << "Nenhum poligono desenhado. Criando cubo de teste." << std::endl;
         }
     }
     

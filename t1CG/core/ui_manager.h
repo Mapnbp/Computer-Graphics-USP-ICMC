@@ -359,10 +359,6 @@ public:
             currentY = renderSectionLabel("POLYGON TOOLS", currentY);
             
             // Renderiza TODOS os botões 2D (Close, Fill, Clear, Toggle Vertices, Save)
-            int count2D = button2DEnd - button2DStart;
-            std::cout << "[DEBUG] Renderizando Modo 2D - Botões: " << count2D 
-                      << " (indices " << button2DStart << " a " << button2DEnd - 1 << ")" << std::endl;
-            
             for (int i = button2DStart; i < button2DEnd && i < buttons.size(); i++) {
                 buttons[i]->update();
                 buttons[i]->render();
@@ -383,8 +379,18 @@ public:
      * @brief Processa clique do mouse
      */
     bool handleClick(int mouseX, int mouseY) {
+        bool is3DMode = false;
+        if (currentMode != nullptr) {
+            int modeValue = *(int*)currentMode;
+            is3DMode = (modeValue == 1);
+        }
+
+        int start = is3DMode ? button3DStart : button2DStart;
+        int end = is3DMode ? button3DEnd : button2DEnd;
+
         // Verifica clique nos botões
-        for (auto& btn : buttons) {
+        for (int i = start; i < end; i++) {
+            auto& btn = buttons[i];
             if (btn->handleClick(mouseX, mouseY)) {
                 // Para botões RADIO, atualiza o grupo
                 if (btn->type == ButtonType::RADIO) {
@@ -414,8 +420,17 @@ public:
      * @brief Atualiza hover de todos os botões
      */
     void handleHover(int mouseX, int mouseY) {
-        for (auto& btn : buttons) {
-            btn->updateHover(mouseX, mouseY);
+        bool is3DMode = false;
+        if (currentMode != nullptr) {
+            int modeValue = *(int*)currentMode;
+            is3DMode = (modeValue == 1);
+        }
+
+        int start = is3DMode ? button3DStart : button2DStart;
+        int end = is3DMode ? button3DEnd : button2DEnd;
+
+        for (int i = start; i < end; i++) {
+            buttons[i]->updateHover(mouseX, mouseY);
         }
     }
     

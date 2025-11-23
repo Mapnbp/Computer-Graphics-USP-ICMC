@@ -132,10 +132,8 @@ void keyboard(unsigned char key, int x, int y) {
         if (app->currentMode == AppMode::MODE_2D_EDITOR) {
             app->create3DObjectsFrom2D();
             app->currentMode = AppMode::MODE_3D_VIEWER;
-            std::cout << "--> Modo: Visualizador 3D" << std::endl;
         } else {
             app->currentMode = AppMode::MODE_2D_EDITOR;
-            std::cout << "--> Modo: Editor 2D" << std::endl;
         }
         glutPostRedisplay();
         return;
@@ -220,10 +218,11 @@ void motion(int x, int y) {
 void passiveMotion(int x, int y) {
     auto* app = ApplicationContext::getInstance();
     
+    // UI Hover deve funcionar em ambos os modos
+    app->uiManager.handleHover(x, y);
+
     if (app->currentMode == AppMode::MODE_2D_EDITOR) {
         if (app->eventHandler) app->eventHandler->updateMouseCursor(x, y);
-    } else {
-        app->uiManager.handleHover(x, y);
     }
     glutPostRedisplay();
 }

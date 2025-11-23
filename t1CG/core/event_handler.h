@@ -60,6 +60,7 @@ public:
         }
     }
 
+
     void handleMouseClick(int mouseX, int mouseY, bool isRightButton) {
         if (!windowDimensions) return;
         
@@ -69,12 +70,10 @@ public:
                 Point2D newVertex(mouseX, mouseY);
                 polygonManager->addVertex(newVertex);
                 *currentApplicationState = ApplicationState::DRAWING_POLYGON;
-                std::cout << "Vertice adicionado: (" << mouseX << ", " << mouseY << ")" << std::endl;
             } else {
                 if (polygonManager->getVertexCount() >= 3) {
                     polygonManager->closePolygon();
                     *currentApplicationState = ApplicationState::POLYGON_READY;
-                    std::cout << "Poligono fechado" << std::endl;
                 }
             }
         }
@@ -88,35 +87,28 @@ public:
                 if (polygonManager->getVertexCount() >= 3) {
                     polygonManager->closePolygon();
                     *currentApplicationState = ApplicationState::POLYGON_READY;
-                    std::cout << "Poligono fechado" << std::endl;
                 }
                 break;
             case 'c': case 'C':
                 polygonManager->clearPolygon();
                 *currentApplicationState = ApplicationState::DRAWING_POLYGON;
-                std::cout << "Poligono limpo" << std::endl;
                 break;
             case 'p': case 'P':
                 if (polygonManager->canBeFilled()) {
                     *currentApplicationState = ApplicationState::POLYGON_FILLED;
-                    std::cout << "Poligono marcado para preenchimento" << std::endl;
                 }
                 break;
             case 'v': case 'V':
                 polygonManager->toggleVertexVisibility();
-                std::cout << "Vertices " << (polygonManager->getVisualConfiguration().showVertices ? "mostrados" : "ocultos") << std::endl;
                 break;
             case '+': case '=':
                 polygonManager->adjustLineThickness(true);
-                std::cout << "Espessura: " << polygonManager->getVisualConfiguration().lineThickness << std::endl;
                 break;
             case '-':
                 polygonManager->adjustLineThickness(false);
-                std::cout << "Espessura: " << polygonManager->getVisualConfiguration().lineThickness << std::endl;
                 break;
             case '1': case '2': case '3': case '4': case '5': case '6':
                 polygonManager->applyPresetFillColor(keyCode - '0');
-                std::cout << "Cor alterada" << std::endl;
                 break;
             case 's': case 'S':
                 if (polygonManager->canBeFilled()) {
@@ -124,9 +116,7 @@ public:
                     polygonManager->saveCurrentPolygon(isFilled);
                     polygonManager->clearPolygon();
                     *currentApplicationState = ApplicationState::DRAWING_POLYGON;
-                    std::cout << "Poligono salvo!" << std::endl;
                 } else {
-                    std::cout << "Poligono deve estar fechado para ser salvo!" << std::endl;
                 }
                 break;
         }

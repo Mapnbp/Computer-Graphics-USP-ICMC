@@ -215,7 +215,6 @@ public:
     void saveCurrentPolygon(bool isFilled = false) {
         if (polygonVertices.size() >= 3 && isPolygonClosed) {
             savedPolygons.push_back(SavedPolygon(polygonVertices, visualConfiguration, isFilled));
-            std::cout << "Poligono salvo com " << polygonVertices.size() << " vertices" << std::endl;
         }
     }
 
@@ -232,13 +231,8 @@ public:
      */
     void clearSavedPolygons() {
         savedPolygons.clear();
-        std::cout << "Todos os poligonos salvos foram removidos" << std::endl;
     }
 
-    /**
-     * @brief Retorna o número de polígonos salvos
-     * @return Número de polígonos salvos
-     */
     size_t getSavedPolygonCount() const {
         return savedPolygons.size();
     }
