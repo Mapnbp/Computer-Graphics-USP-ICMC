@@ -86,6 +86,7 @@ private:
     std::function<void()> on2DClearPolygon;
     std::function<void()> on2DToggleVertices;
     std::function<void()> on2DSavePolygon;
+    std::function<void(bool)> on2DLineWidthChange;
     
     // Botão de toggle para color target
     UIButton* colorTargetToggle;
@@ -148,13 +149,15 @@ public:
         std::function<void()> fillCb,
         std::function<void()> clearCb,
         std::function<void()> toggleVerticesCb,
-        std::function<void()> saveCb) {
+        std::function<void()> saveCb,
+        std::function<void(bool)> lineWidthCb) {
         
         on2DClosePolygon = closeCb;
         on2DFillPolygon = fillCb;
         on2DClearPolygon = clearCb;
         on2DToggleVertices = toggleVerticesCb;
         on2DSavePolygon = saveCb;
+        on2DLineWidthChange = lineWidthCb;
     }
     
     /**
@@ -206,6 +209,17 @@ public:
         
         auto saveBtn = createButton(x, startY, w, h, "Save Polygon (S)", ButtonType::ACTION, -1);
         saveBtn->setCallback([this]() { if (on2DSavePolygon) on2DSavePolygon(); });
+        startY += h + spacing;
+
+        // === CONTROLE DE ESPESSURA ===
+        float halfW = (w - spacing) / 2.0f;
+        auto decBtn = createButton(x, startY, halfW, h, "Line -", ButtonType::ACTION, -1);
+        decBtn->setCallback([this]() { if (on2DLineWidthChange) on2DLineWidthChange(false); });
+        
+        auto incBtn = createButton(x + halfW + spacing, startY, halfW, h, "Line +", ButtonType::ACTION, -1);
+        incBtn->setCallback([this]() { if (on2DLineWidthChange) on2DLineWidthChange(true); });
+        
+        startY += h + spacing;
         
         button2DEnd = buttons.size();
         

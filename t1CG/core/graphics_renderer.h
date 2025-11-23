@@ -35,6 +35,8 @@ public:
         glLineWidth(configuration.lineThickness);
         
         glBegin(isPolygonClosed ? GL_LINE_LOOP : GL_LINE_STRIP);
+        // Garante que a cor da linha seja aplicada
+        glColor3f(configuration.lineColor.redComponent, configuration.lineColor.greenComponent, configuration.lineColor.blueComponent);
         for (const auto& vertex : polygonVertices) {
             glVertex2i(vertex.coordinateX, vertex.coordinateY);
         }

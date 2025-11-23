@@ -126,6 +126,10 @@ public:
                     applicationState = ApplicationState::DRAWING_POLYGON;
                 } else {
                 }
+            },
+            // Line width change
+            [this](bool increase) {
+                polygonManager.adjustLineThickness(increase);
             }
         );
         
