@@ -221,16 +221,18 @@ public:
         glMaterialfv(GL_FRONT, GL_SPECULAR, matSpecular);
         glMaterialfv(GL_FRONT, GL_SHININESS, matShininess);
 
-        // Configurar Modelo de Iluminação
+        // Configurar Modelo de Iluminação (Persistência de Estado)
+        // Garanta que o glShadeModel seja aplicado a cada frame
+        if (currentLightingModel == LightingModel::FLAT) {
+            glShadeModel(GL_FLAT);
+        } else {
+            glShadeModel(GL_SMOOTH); // Gouraud e Phong usam Smooth
+        }
+
         if (currentLightingModel == LightingModel::PHONG) {
             glUseProgram(phongProgram);
         } else {
             glUseProgram(0); // Desativar shader
-            if (currentLightingModel == LightingModel::FLAT) {
-                glShadeModel(GL_FLAT);
-            } else {
-                glShadeModel(GL_SMOOTH); // Gouraud
-            }
         }
 
         // Desenhar Objetos
