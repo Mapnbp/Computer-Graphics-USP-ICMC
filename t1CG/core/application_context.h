@@ -86,6 +86,7 @@ public:
             [this](float r, float g, float b) {
                 sceneManager.setObjectColor(r, g, b);
                 polygonManager.setFillColor(r, g, b);
+                polygonManager.setLineColor(r, g, b);
             },
             // Light color callback
             [this](float r, float g, float b) {
