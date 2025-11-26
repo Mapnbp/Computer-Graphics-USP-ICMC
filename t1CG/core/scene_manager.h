@@ -105,19 +105,32 @@ public:
         // Fator de escala para caber na visualizacao (coords tela 0-800 -> coords 3D aprox -4 a 4)
         float scale = 0.01f; 
         
+        // --- 0. Calcular Centroide para Centralizar na Origem ---
+        float centerX = 0.0f;
+        float centerY = 0.0f;
+        int n = vertices2D.size();
+        
+        for (const auto& p : vertices2D) {
+            centerX += p.coordinateX;
+            centerY += p.coordinateY;
+        }
+        if (n > 0) {
+            centerX /= n;
+            centerY /= n;
+        }
+
         // --- 1. Gerar Paredes Laterais (Side Walls) ---
         // Usamos os vértices originais para garantir o contorno correto
-        int n = vertices2D.size();
         int baseIndex = 0;
         
         // Adicionar vértices para as paredes (frente e trás)
         for (const auto& p : vertices2D) {
-            // Frente (Z = +depth/2)
-            obj->addVertex(p.coordinateX * scale, -p.coordinateY * scale, (depth * scale) / 2.0f);
+            // Frente (Z = +depth/2) - Centralizado
+            obj->addVertex((p.coordinateX - centerX) * scale, -(p.coordinateY - centerY) * scale, (depth * scale) / 2.0f);
         }
         for (const auto& p : vertices2D) {
-            // Trás (Z = -depth/2)
-            obj->addVertex(p.coordinateX * scale, -p.coordinateY * scale, -(depth * scale) / 2.0f);
+            // Trás (Z = -depth/2) - Centralizado
+            obj->addVertex((p.coordinateX - centerX) * scale, -(p.coordinateY - centerY) * scale, -(depth * scale) / 2.0f);
         }
         
         // Criar faces laterais
@@ -143,7 +156,8 @@ public:
         for (const auto& tri : triangles) {
             std::vector<int> faceIndices;
             for (const auto& p : tri) {
-                obj->addVertex(p.coordinateX * scale, -p.coordinateY * scale, (depth * scale) / 2.0f);
+                // Centralizado
+                obj->addVertex((p.coordinateX - centerX) * scale, -(p.coordinateY - centerY) * scale, (depth * scale) / 2.0f);
                 faceIndices.push_back(obj->vertices.size() - 1);
             }
             // A ordem da triangulação do scanline é geralmente consistente, mas precisamos verificar o winding.
@@ -158,7 +172,8 @@ public:
             // Para a tampa traseira, precisamos inverter a ordem dos vértices para a normal apontar para trás
             for (int i = 2; i >= 0; i--) {
                 const auto& p = tri[i];
-                obj->addVertex(p.coordinateX * scale, -p.coordinateY * scale, -(depth * scale) / 2.0f);
+                // Centralizado
+                obj->addVertex((p.coordinateX - centerX) * scale, -(p.coordinateY - centerY) * scale, -(depth * scale) / 2.0f);
                 faceIndices.push_back(obj->vertices.size() - 1);
             }
             obj->addFace(faceIndices);
@@ -206,6 +221,13 @@ public:
     }
 
     void render() {
+        // === GARANTIR ESTADO OPENGL CORRETO ===
+        // Re-habilitar lighting que pode ter sido desabilitado durante renderização da UI
+        glEnable(GL_LIGHTING);
+        glEnable(GL_LIGHT0);
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_NORMALIZE);
+        
         // Configurar Câmera
         glLoadIdentity();
         gluLookAt(cameraPosition.x, cameraPosition.y, cameraPosition.z,
