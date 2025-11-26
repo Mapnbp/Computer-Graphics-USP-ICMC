@@ -80,6 +80,10 @@ public:
             },
             // Object type callback
             [this](ObjectType type) {
+                // GUARD: Impede seleção de objetos 3D no modo 2D
+                if (currentMode != AppMode::MODE_3D_VIEWER) {
+                    return; // Ignora o callback se não estiver no modo 3D
+                }
                 sceneManager.clearObjects(); // Remove objetos extrudados/anteriores
                 sceneManager.setObjectType(type);
             },
