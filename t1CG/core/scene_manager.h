@@ -211,11 +211,12 @@ public:
         if (currentProjection == ProjectionType::PERSPECTIVE) {
             gluPerspective(45.0f, aspect, 0.1f, 100.0f);
         } else {
-            float size = 5.0f;
+            // VISUAL: Linhas paralelas, sem profundidade, isométrico
+            float viewRange = 10.0f; // Ajustado para melhor visualização
             if (w >= h)
-                glOrtho(-size * aspect, size * aspect, -size, size, -100.0f, 100.0f);
+                glOrtho(-viewRange * aspect, viewRange * aspect, -viewRange, viewRange, 0.1f, 500.0f);
             else
-                glOrtho(-size, size, -size / aspect, size / aspect, -100.0f, 100.0f);
+                glOrtho(-viewRange, viewRange, -viewRange / aspect, viewRange / aspect, 0.1f, 500.0f);
         }
         glMatrixMode(GL_MODELVIEW);
     }
